@@ -82,7 +82,7 @@ sub store_entry {
     }
     $msg = MIME::Lite->new(
         Date    => $date->format('Mail'),
-        From    => encode('MIME-Header', qq("$feed_title" <$from>)),
+        From    => encode('MIME-Header', qq("$feed_title")) . " <$from>",
         To      => $cfg->{mailto},
         Subject => encode('MIME-Header', $subject),
         Type    => 'multipart/related',
