@@ -109,8 +109,9 @@ sub handle_feed {
         $entry->title(_u($e->title));
         $entry->author(_u($e->author));
 
-        my @category = $e->category;
-        $entry->tags([ map _u($_), @category ]) if @category;
+        my $category = $e->category;
+        $category = [ $category ] if $category && !ref($category);
+        $entry->tags([ map _u($_), @$category ]) if $category;
 
         # XXX XML::Feed doesn't support extracting atom:category yet
         if ($remote->format eq 'Atom' && $e->{entry}->can('categories')) {
