@@ -36,7 +36,7 @@ sub aggregate {
 	}
 	my $html = decode_content($res);
 	my $entry = scraper {
-	    process 'p.tweet-text', post => 'TEXT';
+	    process 'p.tweet-text', post => 'HTML';
 	    process 'a.tweet-timestamp', url => '@href';
 	    process 'a.tweet-timestamp>span', date => '@data-time';
 	    process 'span.username>b', id => 'TEXT';
@@ -55,14 +55,15 @@ sub aggregate {
 	    my $entry  = Plagger::Entry->new;
 	    my $id = $line->{id};
 	    my $post = $line->{post};
+	    my $title = substr(Plagger::Util::strip_html($post), 0, 100);
 
 	    $context->log(debug => $post);
 	    my $dt = eval { Plagger::Date->from_epoch($line->{date}) };
 	    $entry->date($dt) if $dt;
 	    $entry->body($post);
 	    $entry->author($id);
-	    $entry->title(substr($post, 0, 50));
-	    $entry->link($line->{url});
+	    $entry->title($title);
+	    $entry->link(URI->new_abs($line->{url}, $url));
 	    
 	    $feed->add_entry($entry);
 	}
@@ -85,6 +86,7 @@ Plagger::Plugin::CustomFeed::Twitter - Scraping Twitter HTML.
        uri:
           - https://twitter.com/riywo
           - https://twitter.com/fujii0
+          - https://twitter.com/search?q=emacs%20min_faves%3A1
 
 =head1 DESCRIPTION
 
