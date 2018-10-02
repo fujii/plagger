@@ -1,4 +1,10 @@
-author: kazeburo
-handle: http://(\w+\.watch|k-tai)\.impress\.co\.jp/
-extract: <!--\s?本文開始\s?-->(.*)<!--\s?本文終了\s?-->
-extract_capture: body
+author: emasaka
+handle: https?://(?:[\w-]+\.watch|k-tai|www\.forest)\.impress\.co\.jp/
+extract_xpath:  
+  body: //div[contains(@class,"main-contents")]
+  author: //ul[@class="author list"]|//p[@class="pgh-articleinfo-01"]|//p[@class="author"]
+extract_after_hook: |
+  unless ($data->{author}) {
+    $data->{author} = '';
+  }
+  $data->{author} =~ s{<("[^"]*"|'[^']*'|[^'">])*>}{}g;
