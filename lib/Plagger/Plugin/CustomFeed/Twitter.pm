@@ -2,7 +2,8 @@ package Plagger::Plugin::CustomFeed::Twitter;
 use strict;
 use base qw( Plagger::Plugin );
 
-use URI;
+use Plagger::UserAgent;
+use Plagger::Util qw( decode_content );
 use Web::Scraper;
 
 sub register {
@@ -24,9 +25,16 @@ sub load {
 sub aggregate {
     my ($self, $context, $args) = @_;
 
-    foreach my $uri (@{$self->conf->{uri}}) {
-	$context->log(info => $uri);
-	my $html = new URI($uri);
+    foreach my $url (@{$self->conf->{uri}}) {
+	$context->log(info => $url);
+	my $agent = Plagger::UserAgent->new;
+
+	my $res = $agent->fetch($url, $self);
+	if ($res->http_response->is_error) {
+	    $context->log(error => "GET $url failed: " . $res->status);
+	    return;
+	}
+	my $html = decode_content($res);
 	my $entry = scraper {
 	    process 'p.tweet-text', post => 'TEXT';
 	    process 'a.tweet-timestamp', url => '@href';
@@ -40,7 +48,7 @@ sub aggregate {
 
 	my $feed = Plagger::Feed->new;
 	$feed->type('twitter');
-	$feed->link($uri);
+	$feed->link($url);
 	$feed->title($res->{title});
 
 	foreach my $line (@{$res->{entry}}){
