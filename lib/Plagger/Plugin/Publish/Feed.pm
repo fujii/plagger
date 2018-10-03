@@ -52,7 +52,7 @@ sub publish_feed {
     $feed->generator("Plagger/$Plagger::VERSION");
     $feed->description($f->description);
     $feed->copyright($f->meta->{copyright}) if $f->meta->{copyright};
-    $feed->author( $self->make_author($f->author, $feed_format) )
+    $feed->author( $self->make_author($f->primary_author, $feed_format) )
         if $f->primary_author;
 
     my $taguri_base = $self->conf->{taguri_base} || do {
